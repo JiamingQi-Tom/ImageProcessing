@@ -1,15 +1,14 @@
 #! /usr/bin/env python3
 import sys
 sys.path.append('/home/tomqi/Documents/exps_ws/src/plugins/script')
-# import pyrealsense2 as rs2
+import pyrealsense2 as rs
 import cv2
 import rospy
 import numpy as np
 import message_filters
-import pyrealsense2 as rs
 from sensor_msgs.msg import Image, CameraInfo
 from cv_bridge import CvBridge, CvBridgeError
-from plugins.msg import msg_int, msg_float
+from plugins.msg import float_array
 
 
 def pixel_to_point_fixed_depth(intrinsics, pixel, depth_image, fixed_depth=False):
@@ -24,14 +23,14 @@ def pixel_to_point_fixed_depth(intrinsics, pixel, depth_image, fixed_depth=False
         x = (pixel[0] - ppx) / fx * z
         y = (pixel[1] - ppy) / fy * z
 
-        points = np.array([x, y, z], dtype=np.float)
+        points = np.array([x, y, z], dtype=np.float64)
 
     else:
         num = np.size(pixel, axis=0)
 
-        x = np.zeros(num, dtype=np.float)
-        y = np.zeros(num, dtype=np.float)
-        z = np.zeros(num, dtype=np.float)
+        x = np.zeros(num, dtype=np.float64)
+        y = np.zeros(num, dtype=np.float64)
+        z = np.zeros(num, dtype=np.float64)
 
         if not fixed_depth:
             z = depth_image[pixel[:, 1], pixel[:, 0]] * 0.001
@@ -71,7 +70,7 @@ def pixel_to_point(intrinsics, pixel, depth_image):
         x = (pixel[0] - ppx) / fx * z
         y = (pixel[1] - ppy) / fy * z
 
-        points = np.array([x, y, z], dtype=np.float)
+        points = np.array([x, y, z], dtype=np.float64)
 
     else:
         z = depth_image[pixel[:, 1], pixel[:, 0]] * 0.001
@@ -88,8 +87,8 @@ def pixel_to_point(intrinsics, pixel, depth_image):
 
 
 def Obtain3DShape(shape_2D, aligned_depth_frame, depth_intrin):
-    depth = np.zeros(np.size(shape_2D, axis=0), dtype=np.float)
-    shape_3D = np.zeros((np.size(shape_2D, axis=0), 3), dtype=np.float)
+    depth = np.zeros(np.size(shape_2D, axis=0), dtype=np.float64)
+    shape_3D = np.zeros((np.size(shape_2D, axis=0), 3), dtype=np.float64)
 
     for i in range(np.size(shape_2D, axis=0)):
         depth[i] = aligned_depth_frame.get_distance(shape_2D[i, 0], shape_2D[i, 1])
@@ -118,13 +117,13 @@ class RealSenseRosSet:
         self.sync2 = message_filters.ApproximateTimeSynchronizer([self.color_camera_info_sub, self.depth_camera_info_sub], 10, 1, allow_headerless=True)
         self.sync2.registerCallback(self.callback2)
 
-        self.color_intrinsics = np.eye(3, dtype=np.float)
-        self.depth_intrinsics = np.eye(3, dtype=np.float)
+        self.color_intrinsics = np.eye(3, dtype=np.float64)
+        self.depth_intrinsics = np.eye(3, dtype=np.float64)
 
         self.bridge = CvBridge()
 
-        self.mouse_click_position = np.array([0, 0, 0], dtype=np.float)
-        self.pub_mouse_click_position = rospy.Publisher("/mouse_click_position", msg_float, queue_size=2)
+        self.mouse_click_position = np.array([0, 0, 0], dtype=np.float64)
+        self.pub_mouse_click_position = rospy.Publisher("/mouse_click_position", float_array, queue_size=2)
 
         cv2.namedWindow("frame1")
         cv2.setMouseCallback("frame1", self.capture_event)
