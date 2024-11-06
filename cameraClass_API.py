@@ -44,21 +44,18 @@ class RealSenseD455Set:
 
                 self.profile = self.pipeline.start(self.config)
 
-                # self.depth_scale = self.profile.get_device().first_depth_sensor().get_depth_scale()
-                # self.depth_sensor = self.profile.get_device().first_depth_sensor()
-                # self.depth_sensor.set_option(rs.option.visual_preset, 2)
-                # self.depth_sensor.set_option(rs.option.brightness, 2)
-                # self.depth_sensor.set_option(rs.option.enable_auto_exposure, True)
+                self.depth_sensor = self.profile.get_device().first_depth_sensor()
+                self.depth_sensor = self.profile.get_device().first_depth_sensor()
+                self.depth_sensor = self.profile.get_device().first_depth_sensor()
 
-                # sensors = dev.query_sensors()
-                # for sensor in sensors:
-                #     if sensor.is_depth_sensor:
-                #         sensor.set_option(rs.option.exposure, 140000.00)
-                #         sensor.set_option(rs.option.gain, 39.00)
-                #         print(sensor.get_option(rs.option.exposure))
+                print(self.depth_sensor.get_depth_scale())
+                print(self.depth_sensor.get_option(rs.option.exposure))
+                print(self.depth_sensor.get_option_range(rs.option.exposure))
+                print(self.profile.get_device().first_depth_sensor().get_depth_scale())
 
                 self.align_to = rs.stream.color
                 self.align = rs.align(self.align_to)
+                self.intrinsic_get = False
 
                 if int(dev.get_info(rs.camera_info.serial_number)) == self.camera1_id:
                     self.pipelines["camera1"] = self.pipeline
@@ -66,68 +63,53 @@ class RealSenseD455Set:
                 elif int(dev.get_info(rs.camera_info.serial_number)) == self.camera2_id:
                     self.pipelines["camera2"] = self.pipeline
 
-                self.intrinsic_get = False
-                self.extrinsic_get = False
-
-        # self.sensor = self.profile.get_device().first_depth_sensor()
-        # depth_sensor = self.profile.get_device().first_depth_sensor()
-        # depth_scale = depth_sensor.get_depth_scale()
-        # print(self.sensor.get_option(rs.option.exposure))
-        # print(self.sensor.get_option_range(rs.option.exposure))
-
-        # self.align_to = rs.stream.color
-        # self.align = rs.align(self.align_to)
-        # self.intrinsic_get = False
-
-        # cv2.namedWindow("frame1")
-        # cv2.setMouseCallback("frame1", self.capture_event)
-
     def display(self):
         while True:
-            camera1 = self.get_aligned_images(pipeline=self.pipelines["camera1"])[0]
+            # camera1 = self.get_aligned_images(pipeline=self.pipelines["camera1"])[0]
             camera2 = self.get_aligned_images(pipeline=self.pipelines["camera2"])[0]
 
-            cv2.imshow('camera1', camera1)
+            # cv2.imshow('camera1', camera1)
             cv2.imshow('camera2', camera2)
-            # combine = np.hstack((camera1, camera2))
-            # cv2.imshow('combine', combine)
             cv2.waitKey(1)
 
-            # (h, w) = camera1.shape[:2]
-            # center = (w // 2, h // 2)
-            # M = cv2.getRotationMatrix2D(center, 180, 1.0)
-            # rotated_image1 = cv2.warpAffine(camera1, M, (w, h))
-            # rotated_image2 = cv2.warpAffine(camera2, M, (w, h))
-            # cv2.imshow('rotated_image1', rotated_image1)
-            # cv2.imshow('rotated_image1', rotated_image2)
-            # combine = np.hstack((rotated_image1, rotated_image2))
-            # cv2.imshow('combine', combine)
-            # cv2.waitKey(1)
-
     def get_aligned_images(self, pipeline):
+        """
+        0: color_image
+        1: depth_image
+        2: aligned_color_image
+        3: aligned_depth_image
+        4: color_intrinsic
+        5: depth_intrinsic
+        """
         frames = pipeline.wait_for_frames()
         aligned_frames = self.align.process(frames)
         aligned_color_frame = aligned_frames.get_color_frame()
         aligned_depth_frame = aligned_frames.get_depth_frame()
-        if not self.intrinsic_get:
-            self.color_intrin = aligned_color_frame.profile.as_video_stream_profile().intrinsics
-            self.depth_intrin = aligned_depth_frame.profile.as_video_stream_profile().intrinsics
+        color_intrin = []
+        depth_intrin = []
 
-            self.intrinsic_get = True
+        # Get the intrinsics parameters
+        color_intrin = aligned_color_frame.profile.as_video_stream_profile().intrinsics
+        depth_intrin = aligned_depth_frame.profile.as_video_stream_profile().intrinsics
+
+        # if not self.intrinsic_get:
+        #     self.intrinsic_get = True
 
         color_image = np.asanyarray(aligned_color_frame.get_data())
         depth_image = np.asanyarray(aligned_depth_frame.get_data())
 
-        return color_image, depth_image, aligned_color_frame, aligned_depth_frame
+        results = []
+        results.append(color_image)
+        results.append(depth_image)
+        results.append(aligned_color_frame)
+        results.append(aligned_depth_frame)
+        results.append(color_intrin)
+        results.append(depth_intrin)
+
+        return results
 
 
 class RealSenseD405Set:
-    """
-    @
-    @
-    @
-    """
-
     def __init__(self, displaysize='small'):
         self.ctx = rs.context()
         self.devices = self.ctx.query_devices()
