@@ -2,12 +2,12 @@
 import sys
 sys.path.append('/home/tomqi/Documents/exps_ws/src/plugins/script')
 sys.path.append('/home/tomqi/Documents/exps_ws/src/exp_m7/script')
-from General_method2 import *
+import cv2
 from ConvertPointcloud import *
 from copy import deepcopy
-from imgpro_roslaunch import *
-from algorithms_m7 import *
-
+from cameraClass_ROS import *
+from imgpro_general import find_area
+from plugins.msg import float_array
 
 def find_bag_rim(origin, color, fixedNum=30, base=[247, 59], cropsize=None, clustering=True):
     closing = find_area(origin, threshold=color, hsv_flag=False)[1]
@@ -54,25 +54,25 @@ class ImageProcessing(RealSenseRosSet):
         # self.rate = rospy.Rate(self.publish_rate)
 
         self.bag_2D = np.zeros((10, 2), dtype=np.uint8)
-        self.pub1 = rospy.Publisher("/bag_2D", msg_int, queue_size=10)
+        self.pub1 = rospy.Publisher("/bag_2D", float_array, queue_size=10)
 
-        self.bag_3D = np.zeros((10, 3), dtype=np.float)
+        self.bag_3D = np.zeros((10, 3), dtype=np.float64)
         self.pub2 = rospy.Publisher("/bag_3D", PointCloud2, queue_size=10)
 
         self.query_point_2D = np.zeros(2, dtype=np.uint8)
-        self.pub3 = rospy.Publisher("/query_point_2D", msg_int, queue_size=10)
+        self.pub3 = rospy.Publisher("/query_point_2D", float_array, queue_size=10)
 
-        self.query_point_3D = np.zeros(3, dtype=np.float)
+        self.query_point_3D = np.zeros(3, dtype=np.float64)
         self.pub4 = rospy.Publisher("/query_point_3D", PointCloud2, queue_size=10)
 
         self.neighbours_point_2D = np.zeros((10, 2), dtype=np.uint8)
-        self.pub5 = rospy.Publisher("/neighbours_point_2D", msg_int, queue_size=10)
+        self.pub5 = rospy.Publisher("/neighbours_point_2D", float_array, queue_size=10)
 
-        self.neighbours_point_3D = np.zeros((10, 3), dtype=np.float)
+        self.neighbours_point_3D = np.zeros((10, 3), dtype=np.float64)
         self.pub6 = rospy.Publisher("/neighbours_point_3D", PointCloud2, queue_size=10)
 
         self.random_point_2D = np.zeros(2, dtype=np.uint8)
-        self.random_point_3D = np.zeros(3, dtype=np.float)
+        self.random_point_3D = np.zeros(3, dtype=np.float64)
 
         self.fixedNum = 20
         self.cropsize = np.array([[443, 211], [930, 556]])
@@ -94,7 +94,7 @@ class ImageProcessing(RealSenseRosSet):
                 # for i in range(np.size(self.bag_2D, axis=0)):
                 #     cv2.circle(frame1, (self.bag_2D[i, 0], self.bag_2D[i, 1]), 1, (40, 40, 150), -1)
 
-                self.bag_3D = pixel_to_point(self.color_intrinsics, self.bag_2D, self.depth_image, fixed_depth=False)
+                self.bag_3D = pixel_to_point(self.color_intrinsics, self.bag_2D, self.depth_image)
                 dataTrans = xyzrgb2pointcloud2(self.bag_3D, self.bag_2D, self.color_image, False, [0, 255, 0], 'camera_link')
                 self.pub2.publish(dataTrans)
 
@@ -139,12 +139,12 @@ class ImageProcessing(RealSenseRosSet):
             # cv2.rectangle(frame2, self.cropsize[0, :], self.cropsize[1, :], (0, 255, 0), 2)
             # cv2.imshow('frame2', frame2)
 
-            if cv2.waitKey(1) * 0xff == ord('q'):
-                cv2.destroyAllWindows()
-                break
-
+            # if cv2.waitKey(1) * 0xff == ord('q'):
+            #     cv2.destroyAllWindows()
+            #     break
             # elif cv2.waitKey(1) & 0xFF == ord('s'):
             #     np.savetxt('neighbours_point_3D.txt', self.neighbours_point_3D, delimiter=',')
+            cv2.waitKey(1)
 
 
 if __name__ == '__main__':

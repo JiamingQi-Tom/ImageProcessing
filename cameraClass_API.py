@@ -48,10 +48,10 @@ class RealSenseD455Set:
                 self.depth_sensor = self.profile.get_device().first_depth_sensor()
                 self.depth_sensor = self.profile.get_device().first_depth_sensor()
 
-                print(self.depth_sensor.get_depth_scale())
-                print(self.depth_sensor.get_option(rs.option.exposure))
-                print(self.depth_sensor.get_option_range(rs.option.exposure))
-                print(self.profile.get_device().first_depth_sensor().get_depth_scale())
+                # print(self.depth_sensor.get_depth_scale())
+                # print(self.depth_sensor.get_option(rs.option.exposure))
+                # print(self.depth_sensor.get_option_range(rs.option.exposure))
+                # print(self.profile.get_device().first_depth_sensor().get_depth_scale())
 
                 self.align_to = rs.stream.color
                 self.align = rs.align(self.align_to)

@@ -11,52 +11,52 @@ from cv_bridge import CvBridge, CvBridgeError
 from plugins.msg import float_array
 
 
-def pixel_to_point_fixed_depth(intrinsics, pixel, depth_image, fixed_depth=False):
-    fx = intrinsics[0, 0]
-    fy = intrinsics[1, 1]
-    ppx = intrinsics[0, 2]
-    ppy = intrinsics[1, 2]
-    scale = intrinsics[0, 1]
-
-    if len(pixel) == 2:
-        z = depth_image[pixel[1], pixel[0]] * 0.001
-        x = (pixel[0] - ppx) / fx * z
-        y = (pixel[1] - ppy) / fy * z
-
-        points = np.array([x, y, z], dtype=np.float64)
-
-    else:
-        num = np.size(pixel, axis=0)
-
-        x = np.zeros(num, dtype=np.float64)
-        y = np.zeros(num, dtype=np.float64)
-        z = np.zeros(num, dtype=np.float64)
-
-        if not fixed_depth:
-            z = depth_image[pixel[:, 1], pixel[:, 0]] * 0.001
-            x = (pixel[:, 0] - ppx) / fx * z
-            y = (pixel[:, 1] - ppy) / fy * z
-
-        else:
-            for i in range(num):
-                z[i] = depth_image[pixel[i, 1], pixel[i, 0]] * 0.001
-
-            idx = np.argmin(np.abs(z - np.mean(z)))
-            depth_fixed = z[idx]
-
-            for i in range(num):
-                z[i] = depth_fixed
-                x[i] = (pixel[i, 0] - ppx) / fx * depth_fixed
-                y[i] = (pixel[i, 1] - ppy) / fy * depth_fixed
-
-        points = np.transpose(np.hstack((x, y, z)).reshape(3, -1))
-
-        zero_idx = np.where(points[:, 2] == 0)[0]
-        nonzero_idx = np.where(points[:, 2] != 0)[0]
-        points[zero_idx, :] = points[nonzero_idx[0], :]
-
-    return points
-
+# def pixel_to_point_fixed_depth(intrinsics, pixel, depth_image, fixed_depth=False):
+#     fx = intrinsics[0, 0]
+#     fy = intrinsics[1, 1]
+#     ppx = intrinsics[0, 2]
+#     ppy = intrinsics[1, 2]
+#     scale = intrinsics[0, 1]
+#
+#     if len(pixel) == 2:
+#         z = depth_image[pixel[1], pixel[0]] * 0.001
+#         x = (pixel[0] - ppx) / fx * z
+#         y = (pixel[1] - ppy) / fy * z
+#
+#         points = np.array([x, y, z], dtype=np.float64)
+#
+#     else:
+#         num = np.size(pixel, axis=0)
+#
+#         x = np.zeros(num, dtype=np.float64)
+#         y = np.zeros(num, dtype=np.float64)
+#         z = np.zeros(num, dtype=np.float64)
+#
+#         if not fixed_depth:
+#             z = depth_image[pixel[:, 1], pixel[:, 0]] * 0.001
+#             x = (pixel[:, 0] - ppx) / fx * z
+#             y = (pixel[:, 1] - ppy) / fy * z
+#
+#         else:
+#             for i in range(num):
+#                 z[i] = depth_image[pixel[i, 1], pixel[i, 0]] * 0.001
+#
+#             idx = np.argmin(np.abs(z - np.mean(z)))
+#             depth_fixed = z[idx]
+#
+#             for i in range(num):
+#                 z[i] = depth_fixed
+#                 x[i] = (pixel[i, 0] - ppx) / fx * depth_fixed
+#                 y[i] = (pixel[i, 1] - ppy) / fy * depth_fixed
+#
+#         points = np.transpose(np.hstack((x, y, z)).reshape(3, -1))
+#
+#         zero_idx = np.where(points[:, 2] == 0)[0]
+#         nonzero_idx = np.where(points[:, 2] != 0)[0]
+#         points[zero_idx, :] = points[nonzero_idx[0], :]
+#
+#     return points
+#
 
 def pixel_to_point(intrinsics, pixel, depth_image):
     fx = intrinsics[0, 0]
@@ -137,6 +137,8 @@ class RealSenseRosSet:
             # depth_normalized = np.floor(((self.depth_image / np.max(self.depth_image)) * 255)).astype(np.uint8)
             # depth_normalized = cv2.convertScaleAbs(self.depth_image, alpha=255.0 / self.depth_image.max())
             # cv2.imshow('frame1', depth_normalized)
+            # print(np.shape(self.color_image))
+            # print(np.shape(self.depth_image))
 
             if cv2.waitKey(1) * 0xff == ord('q'):
                 cv2.destroyAllWindows()
