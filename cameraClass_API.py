@@ -22,7 +22,7 @@ class RealSenseD455Set:
         self.config = rs.config()
         self.pipelines = {}
 
-        self.camera1_id = 239222302149
+        self.camera1_id = 105322251223
         self.camera2_id = 242422304724
 
         for dev in self.devices:
@@ -65,11 +65,11 @@ class RealSenseD455Set:
 
     def display(self):
         while True:
-            # camera1 = self.get_aligned_images(pipeline=self.pipelines["camera1"])[0]
-            camera2 = self.get_aligned_images(pipeline=self.pipelines["camera2"])[0]
+            camera1 = self.get_aligned_images(pipeline=self.pipelines["camera1"])[0]
+            # camera2 = self.get_aligned_images(pipeline=self.pipelines["camera2"])[0]
 
-            # cv2.imshow('camera1', camera1)
-            cv2.imshow('camera2', camera2)
+            cv2.imshow('camera1', camera1)
+            # cv2.imshow('camera2', camera2)
             cv2.waitKey(1)
 
     def get_aligned_images(self, pipeline):

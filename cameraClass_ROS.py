@@ -1,14 +1,14 @@
 #! /usr/bin/env python3
 import sys
 sys.path.append('/home/tomqi/Documents/exps_ws/src/plugins/script')
-import pyrealsense2 as rs
+# import pyrealsense2 as rs
 import cv2
 import rospy
 import numpy as np
 import message_filters
 from sensor_msgs.msg import Image, CameraInfo
 from cv_bridge import CvBridge, CvBridgeError
-from plugins.msg import float_array
+from plugins.msg import msg_float
 
 
 # def pixel_to_point_fixed_depth(intrinsics, pixel, depth_image, fixed_depth=False):
@@ -123,7 +123,7 @@ class RealSenseRosSet:
         self.bridge = CvBridge()
 
         self.mouse_click_position = np.array([0, 0, 0], dtype=np.float64)
-        self.pub_mouse_click_position = rospy.Publisher("/mouse_click_position", float_array, queue_size=2)
+        self.pub_mouse_click_position = rospy.Publisher("/mouse_click_position", msg_float, queue_size=2)
 
         cv2.namedWindow("frame1")
         cv2.setMouseCallback("frame1", self.capture_event)
