@@ -203,11 +203,11 @@ class RealSenseD405Set:
 
 
 if __name__ == '__main__':
-    ip = RealSenseD455Set(displaysize='big')
-    ip.display()
-
-    # ip = RealSenseD405Set(displaysize='small')
+    # ip = RealSenseD455Set(displaysize='big')
     # ip.display()
+
+    ip = RealSenseD405Set(displaysize='small')
+    ip.display()
 
 
 
