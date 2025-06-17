@@ -86,19 +86,19 @@ def pixel_to_point(intrinsics, pixel, depth_image):
     return points
 
 
-def Obtain3DShape(shape_2D, aligned_depth_frame, depth_intrin):
-    depth = np.zeros(np.size(shape_2D, axis=0), dtype=np.float64)
-    shape_3D = np.zeros((np.size(shape_2D, axis=0), 3), dtype=np.float64)
+# def Obtain3DShape(shape_2D, aligned_depth_frame, depth_intrin):
+#     depth = np.zeros(np.size(shape_2D, axis=0), dtype=np.float64)
+#     shape_3D = np.zeros((np.size(shape_2D, axis=0), 3), dtype=np.float64)
 
-    for i in range(np.size(shape_2D, axis=0)):
-        depth[i] = aligned_depth_frame.get_distance(shape_2D[i, 0], shape_2D[i, 1])
-        shape_3D[i, :] = rs.rs2_deproject_pixel_to_point(depth_intrin, [shape_2D[i, 0], shape_2D[i, 1]], depth[i])
+#     for i in range(np.size(shape_2D, axis=0)):
+#         depth[i] = aligned_depth_frame.get_distance(shape_2D[i, 0], shape_2D[i, 1])
+#         shape_3D[i, :] = rs.rs2_deproject_pixel_to_point(depth_intrin, [shape_2D[i, 0], shape_2D[i, 1]], depth[i])
 
-    zero_idx = np.where(shape_3D[:, 2] == 0)[0]
-    nonzero_idx = np.where(shape_3D[:, 2] != 0)[0]
-    shape_3D[zero_idx, :] = shape_3D[nonzero_idx[0], :]
+#     zero_idx = np.where(shape_3D[:, 2] == 0)[0]
+#     nonzero_idx = np.where(shape_3D[:, 2] != 0)[0]
+#     shape_3D[zero_idx, :] = shape_3D[nonzero_idx[0], :]
 
-    return shape_3D, depth
+#     return shape_3D, depth
 
 
 class RealSenseRosSet:

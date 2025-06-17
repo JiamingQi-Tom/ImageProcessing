@@ -48,10 +48,10 @@ class RealSenseD455Set:
                 self.depth_sensor = self.profile.get_device().first_depth_sensor()
                 self.depth_sensor = self.profile.get_device().first_depth_sensor()
 
-                # print(self.depth_sensor.get_depth_scale())
-                # print(self.depth_sensor.get_option(rs.option.exposure))
-                # print(self.depth_sensor.get_option_range(rs.option.exposure))
-                # print(self.profile.get_device().first_depth_sensor().get_depth_scale())
+                print(self.depth_sensor.get_depth_scale())
+                print(self.depth_sensor.get_option(rs.option.exposure))
+                print(self.depth_sensor.get_option_range(rs.option.exposure))
+                print(self.profile.get_device().first_depth_sensor().get_depth_scale())
 
                 self.align_to = rs.stream.color
                 self.align = rs.align(self.align_to)
@@ -66,10 +66,10 @@ class RealSenseD455Set:
     def display(self):
         while True:
             camera1 = self.get_aligned_images(pipeline=self.pipelines["camera1"])[0]
-            # camera2 = self.get_aligned_images(pipeline=self.pipelines["camera2"])[0]
+            camera2 = self.get_aligned_images(pipeline=self.pipelines["camera2"])[0]
 
             cv2.imshow('camera1', camera1)
-            # cv2.imshow('camera2', camera2)
+            cv2.imshow('camera2', camera2)
             cv2.waitKey(1)
 
     def get_aligned_images(self, pipeline):
@@ -117,8 +117,8 @@ class RealSenseD405Set:
         self.depth_scale = None
         self.pipelines = {}
 
-        self.left_camera_id = 130322272491
-        self.right_camera_id = 128422270849
+        self.camera1_id = 130322272491
+        self.camera2_id = 128422270849
 
         for dev in self.devices:
             dev_name = dev.get_info(rs.camera_info.name)
@@ -126,7 +126,7 @@ class RealSenseD405Set:
                 self.pipeline = rs.pipeline(self.ctx)
                 self.config = rs.config()
                 self.config.enable_device(dev.get_info(rs.camera_info.serial_number))
-                # print('Serial number: ', dev.get_info(rs.camera_info.serial_number))
+                print('Serial number: ', dev.get_info(rs.camera_info.serial_number))
 
                 self.config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
                 self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
@@ -138,8 +138,8 @@ class RealSenseD405Set:
 
                 self.depth_sensor.set_option(rs.option.visual_preset, 2)
                 self.depth_sensor.set_option(rs.option.brightness, 2)
-
                 self.depth_sensor.set_option(rs.option.enable_auto_exposure, True)
+
                 # sensors = dev.query_sensors()
                 # for sensor in sensors:
                 #     if sensor.is_depth_sensor:
@@ -150,11 +150,11 @@ class RealSenseD405Set:
                 self.align_to = rs.stream.color
                 self.align = rs.align(self.align_to)
 
-                if int(dev.get_info(rs.camera_info.serial_number)) == self.left_camera_id:
-                    self.pipelines["left_D405"] = self.pipeline
+                if int(dev.get_info(rs.camera_info.serial_number)) == self.camera1_id:
+                    self.pipelines["D405_1"] = self.pipeline
 
-                elif int(dev.get_info(rs.camera_info.serial_number)) == self.right_camera_id:
-                    self.pipelines["right_D405"] = self.pipeline
+                elif int(dev.get_info(rs.camera_info.serial_number)) == self.camera2_id:
+                    self.pipelines["D405_2"] = self.pipeline
 
                 self.intrinsic_get = False
                 self.extrinsic_get = False
@@ -166,11 +166,11 @@ class RealSenseD405Set:
 
     def display(self):
         while True:
-            left_color_image = self.get_aligned_images(pipeline=self.pipelines["left_D405"])[0]
-            right_color_image = self.get_aligned_images(pipeline=self.pipelines["right_D405"])[0]
+            color_image1 = self.get_aligned_images(pipeline=self.pipelines["D405_1"])[0]
+            color_image2 = self.get_aligned_images(pipeline=self.pipelines["D405_2"])[0]
 
-            cv2.imshow('left_color_image', left_color_image)
-            cv2.imshow('right_color_image', right_color_image)
+            cv2.imshow('color_image1', color_image1)
+            cv2.imshow('color_image2', color_image2)
             cv2.waitKey(1)
 
     def get_aligned_images(self, pipeline):
