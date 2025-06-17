@@ -1,3 +1,7 @@
+import sys
+sys.path.append('/home/tom/Documents/exps_ws/src/plugins/script/ClusterExtraction')
+sys.path.append('/home/tom/Documents/exps_ws/src/plugins/script/ClusterExtraction/Python')
+
 # coding=utf-8
 import cv2
 import matplotlib.pyplot as plt

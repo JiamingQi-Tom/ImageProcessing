@@ -7,24 +7,26 @@ from ConvertPointcloud import *
 from copy import deepcopy
 from cameraClass_ROS import *
 from imgpro_general import find_area
-from plugins.msg import float_array
+from plugins.msg import msg_float
 
 def find_bag_rim(origin, color, fixedNum=30, base=[247, 59], cropsize=None, clustering=True):
-    closing = find_area(origin, threshold=color, hsv_flag=False)[1]
+    closing = find_area(origin, threshold=color, hsv_flag=True)[1]
 
     if cropsize is not None:
         closing = deepcopy(closing[cropsize[0, 1]:cropsize[1, 1], cropsize[0, 0]:cropsize[1, 0]])
 
-    kernel = np.ones((5, 5), np.uint8)
-    closing = cv2.erode(closing, kernel, iterations=8)
+    # kernel = np.ones((3, 3), np.uint8)
+    # closing = cv2.erode(closing, kernel, iterations=8)
+
+    # cv2.imshow('closing', closing)
 
     try:
-        contours, hierarchy, = cv2.findContours(closing, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        contours, hierarchy = cv2.findContours(closing, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         contoursArea = [cv2.contourArea(contour) for idx, contour in enumerate(contours)]
 
         newbinary = np.zeros_like(closing)
 
-        top_k_idx = np.array(contoursArea).argsort()[::-1][0:1]
+        top_k_idx = np.array(contoursArea).argsort()[::-1][0:6]
 
         for i in range(np.size(top_k_idx)):
             idx = top_k_idx[i]
@@ -32,12 +34,12 @@ def find_bag_rim(origin, color, fixedNum=30, base=[247, 59], cropsize=None, clus
             newbinary = cv2.fillPoly(newbinary, [contour], (255))
 
         [x, y] = np.where(newbinary == 255)
-        points = np.hstack((x.reshape(-1, 1), y.reshape(-1, 1))).astype(np.int)
+        points = np.hstack((x.reshape(-1, 1), y.reshape(-1, 1))).astype(np.int64)
         if cropsize is not None:
             points = points + np.array([cropsize[0, 1], cropsize[0, 0]])
 
         if clustering:
-            points = ClusteringExtractionPoints('KMS', points, fixedNum=fixedNum).astype(np.int)
+            points = ClusteringExtractionPoints('KMS', points, fixedNum=fixedNum).astype(np.int64)
 
         points[:, [0, -1]] = points[:, [-1, 0]]
 
@@ -54,19 +56,19 @@ class ImageProcessing(RealSenseRosSet):
         # self.rate = rospy.Rate(self.publish_rate)
 
         self.bag_2D = np.zeros((10, 2), dtype=np.uint8)
-        self.pub1 = rospy.Publisher("/bag_2D", float_array, queue_size=10)
+        self.pub1 = rospy.Publisher("/bag_2D", msg_float, queue_size=10)
 
         self.bag_3D = np.zeros((10, 3), dtype=np.float64)
         self.pub2 = rospy.Publisher("/bag_3D", PointCloud2, queue_size=10)
 
         self.query_point_2D = np.zeros(2, dtype=np.uint8)
-        self.pub3 = rospy.Publisher("/query_point_2D", float_array, queue_size=10)
+        self.pub3 = rospy.Publisher("/query_point_2D", msg_float, queue_size=10)
 
         self.query_point_3D = np.zeros(3, dtype=np.float64)
         self.pub4 = rospy.Publisher("/query_point_3D", PointCloud2, queue_size=10)
 
         self.neighbours_point_2D = np.zeros((10, 2), dtype=np.uint8)
-        self.pub5 = rospy.Publisher("/neighbours_point_2D", float_array, queue_size=10)
+        self.pub5 = rospy.Publisher("/neighbours_point_2D", msg_float, queue_size=10)
 
         self.neighbours_point_3D = np.zeros((10, 3), dtype=np.float64)
         self.pub6 = rospy.Publisher("/neighbours_point_3D", PointCloud2, queue_size=10)
@@ -83,16 +85,20 @@ class ImageProcessing(RealSenseRosSet):
     def run(self):
         while not rospy.is_shutdown():
             frame1 = deepcopy(self.color_image)
-            # frame2 = deepcopy(self.color_image)
+            frame2 = deepcopy(self.color_image)
+            frame3 = deepcopy(self.color_image)
 
             try:
+                pass
                 # ------------------------------------ bag points ------------------------------------ #
-                self.bag_2D = find_bag_rim(frame1, 50, fixedNum=self.fixedNum, base=[247, 59], cropsize=self.cropsize, clustering=False)
+                self.bag_2D = find_bag_rim(frame1, [54, 63, 84], fixedNum=self.fixedNum, base=[247, 59], cropsize=self.cropsize, clustering=False)
                 dataTrans = self.bag_2D.reshape(1, -1).squeeze(axis=0)
                 self.pub1.publish(dataTrans)
 
-                # for i in range(np.size(self.bag_2D, axis=0)):
-                #     cv2.circle(frame1, (self.bag_2D[i, 0], self.bag_2D[i, 1]), 1, (40, 40, 150), -1)
+                for i in range(np.size(self.bag_2D, axis=0)):
+                    cv2.circle(frame1, (self.bag_2D[i, 0], self.bag_2D[i, 1]), 1, (0, 220, 0), -1)
+                    cv2.circle(frame2, (self.bag_2D[i, 0], self.bag_2D[i, 1]), 1, (0, 220, 0), -1)
+
 
                 self.bag_3D = pixel_to_point(self.color_intrinsics, self.bag_2D, self.depth_image)
                 dataTrans = xyzrgb2pointcloud2(self.bag_3D, self.bag_2D, self.color_image, False, [0, 255, 0], 'camera_link')
@@ -135,17 +141,23 @@ class ImageProcessing(RealSenseRosSet):
             # frame1 = frame1[self.cropsize[0, 1]:self.cropsize[1, 1], self.cropsize[0, 0]:self.cropsize[1, 0]]
             cv2.rectangle(frame1, self.cropsize[0, :], self.cropsize[1, :], (0, 255, 0), 2)
             cv2.imshow('frame1', frame1)
+            cv2.imshow('frame2', frame2)
+            cv2.imshow('frame3', frame3)
 
             # cv2.rectangle(frame2, self.cropsize[0, :], self.cropsize[1, :], (0, 255, 0), 2)
             # cv2.imshow('frame2', frame2)
 
-            # if cv2.waitKey(1) * 0xff == ord('q'):
-            #     cv2.destroyAllWindows()
-            #     break
-            # elif cv2.waitKey(1) & 0xFF == ord('s'):
-            #     np.savetxt('neighbours_point_3D.txt', self.neighbours_point_3D, delimiter=',')
-            cv2.waitKey(1)
+            if cv2.waitKey(1) * 0xff == ord('q'):
+                cv2.destroyAllWindows()
+                break
+            elif cv2.waitKey(1) & 0xFF == ord('s'):
+                cv2.imwrite("/home/tom/Documents/exps_ws/src/plugins/script/ImageProcessing/ExpFIgs/case1/frame1.png", frame1, [int(cv2.IMWRITE_PNG_COMPRESSION), 9])  
+                cv2.imwrite("/home/tom/Documents/exps_ws/src/plugins/script/ImageProcessing/ExpFIgs/case1/frame2.png", frame2, [int(cv2.IMWRITE_PNG_COMPRESSION), 9])  
+                cv2.imwrite("/home/tom/Documents/exps_ws/src/plugins/script/ImageProcessing/ExpFIgs/case1/frame3.png", frame3, [int(cv2.IMWRITE_PNG_COMPRESSION), 9])  
+                np.savetxt('/home/tom/Documents/exps_ws/src/plugins/script/ImageProcessing/ExpFIgs/case1/bag_3D.txt', self.bag_3D, delimiter=',')
+                
 
+            
 
 if __name__ == '__main__':
     rospy.init_node('imgpro_fabric', anonymous=True)
