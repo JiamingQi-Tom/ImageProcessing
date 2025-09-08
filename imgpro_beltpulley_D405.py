@@ -58,15 +58,15 @@ class RealSenseRosSet:
     def run(self):
         while not rospy.is_shutdown():
             try:
-                cv2.imshow('frame1', self.color_image1)
-                cv2.imshow('frame2', self.color_image2)
+                cv2.imshow('D405_1', self.color_image1)
+                cv2.imshow('D405_2', self.color_image2)
+                
+                # cv2.imshow('frame1', self.color_image1)
+                # cv2.imshow('frame2', self.color_image2)
             
             except BaseException:
                 pass
             
-
-
-
             if cv2.waitKey(1) & 0xff == ord('q'):
                 cv2.destroyAllWindows()
                 break

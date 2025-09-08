@@ -140,7 +140,7 @@ class RealSenseRosSet:
             # print(np.shape(self.color_image))
             # print(np.shape(self.depth_image))
 
-            if cv2.waitKey(1) * 0xff == ord('q'):
+            if cv2.waitKey(1) & 0xff == ord('q'):
                 cv2.destroyAllWindows()
                 break
 

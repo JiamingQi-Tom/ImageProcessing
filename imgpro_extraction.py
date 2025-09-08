@@ -77,11 +77,9 @@ if __name__ == '__main__':
 
     if hsvSel:
         cv2.namedWindow('closing')
-<<<<<<< HEAD
         cv2.createTrackbar('h', 'closing', 54, 180, nothing)
         cv2.createTrackbar('s', 'closing', 63, 255, nothing)
         cv2.createTrackbar('v', 'closing', 84, 255, nothing)
-=======
         cv2.createTrackbar('h_max', 'closing', 24, 180, nothing)
         cv2.createTrackbar('s_max', 'closing', 129, 255, nothing)
         cv2.createTrackbar('v_max', 'closing', 57, 255, nothing)
@@ -89,7 +87,6 @@ if __name__ == '__main__':
         cv2.createTrackbar('h_min', 'closing', 24, 180, nothing)
         cv2.createTrackbar('s_min', 'closing', 129, 255, nothing)
         cv2.createTrackbar('v_min', 'closing', 57, 255, nothing)
->>>>>>> a61417749b64e8ac1a7d5e0af6b0aa3419422410
     else:
         cv2.namedWindow('closing')
         cv2.createTrackbar('thresh', 'closing', 125, 255, nothing)
