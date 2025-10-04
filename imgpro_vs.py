@@ -72,8 +72,6 @@ class ImageProcessing(RealSenseRosSet):
 
                         self.feature_3D = pixel_to_point(self.color_intrinsics, self.feature_2D, self.depth_image)
 
-                        
-
                         # Step 7: 将每个 (x, y) 坐标对转换为整数 #
                         cv2.putText(frame1, "id: " + str(markerIds[i]), (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
